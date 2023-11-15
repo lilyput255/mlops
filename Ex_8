@@ -1,0 +1,45 @@
+#In Datalab or Colab
+#We need to install mlflow for that use pip install mlflow
+import mlflow
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.datasets import load_iris
+from sklearn.metrics import accuracy_score
+
+iris = load_iris()
+X,y = iris.data,iris.target
+X_train,X_test,y_train,y_test = train_test_split(X,y,
+                                                 test_size=0.2,
+                                                 random_state=257)
+
+with mlflow.start_run(nested=True):
+
+    hidden_layer_sizes = (150,10)
+    learning_rate_init = .001
+    max_iter = 100
+
+    model = MLPClassifier(
+        hidden_layer_sizes = hidden_layer_sizes,
+        learning_rate_init= learning_rate_init,
+        max_iter=max_iter
+    )
+
+
+    mlflow.log_params({
+        "hidden_layer_sizes":hidden_layer_sizes,
+        "learning_rate_init":learning_rate_init,
+        "max_iter": max_iter
+    })
+
+    accuracy_list = []
+
+    for epoch in range(max_iter):
+        model.fit(X_train,y_train)
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test,y_pred)
+        accuracy_list.append(accuracy)
+    
+        mlflow.log_metric('Epoch_Accuracy', accuracy, step=epoch)
+    
+    mlflow.sklearn.save_model(model,'MLPClassifier')
+mlflow.end_run()
