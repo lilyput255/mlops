@@ -1,0 +1,31 @@
+# 4 th exp
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split as tts
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import permutation_importance
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+x = pd.DataFrame(iris.data, columns = iris.feature_names)
+y = iris.target
+x_train,x_test,y_train,y_test = tts(x,y,test_size = 0.2,random_state = 42)
+
+model = RandomForestClassifier(n_estimators = 100, random_state = 42)
+model.fit(x_train,y_train)
+y_pred = model.predict(x_test)
+accuracy = accuracy_score(y_test,y_pred)
+print('Accuracy : ',accuracy*100,'%')
+perm_imp = permutation_importance(model,x_test,y_test,n_repeats = 30, random_state = 42)
+feat_imp = perm_imp.importances_mean
+feat_names = x.columns
+
+for feat_name,imp in zip(feat_names,feat_imp):
+    print(feat_name,":",imp)
+    
+plt.barh(feat_names,feat_imp)
+plt.xlabel('Permutation Importance')
+plt.title("Permutat
