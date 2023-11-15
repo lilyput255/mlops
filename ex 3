@@ -1,0 +1,52 @@
+#Dockerfile
+FROM python:3.8
+
+WORKDIR /app
+
+RUN pip install scikit-learn joblib pandas
+
+COPY . .
+
+RUN python train.py
+
+CMD ["python", "inference.py"]
+
+#train.py
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+import numpy as np
+import joblib
+import os
+iris_df = load_iris()
+X = iris_df.data
+y = iris_df.target
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size = 0.1)
+data_dir = "./data"
+model_dir = "./model"
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+joblib.dump(model,os.path.join(model_dir,"logistic_model.joblib"))
+
+print("Training Completed")
+
+
+#inference.py
+import joblib 
+import pandas as pd
+
+model = joblib.load("./model/logistic_model.joblib")
+sepalLength = float(input("Enter sepal length: "))
+sepalWidth = float(input("Enter sepal width: "))
+petalLength = float(input("Enter petal length: "))
+petalWidth = float(input("Enter petal width: "))
+
+user_input = [[sepalLength,sepalWidth,petalLength,petalWidth]]
+
+predictions = model.predict(user_input)
+classes = ["Iris-Setosa","Iris-Versicolor","Iris-virginica"]
+print("predicted class is,",classes[predictions[0]])
+
+print("Inference Completed"
