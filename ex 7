@@ -1,0 +1,38 @@
+#Dockerfile
+FROM python:3.8
+
+WORKDIR /app
+
+RUN pip install tpot scikit-learn pandas 
+
+COPY . .
+
+CMD ["python", "automl_script.py"]
+
+#automl_script.py
+from tpot import TPOTClassifier
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+iris = load_iris()
+X, y = iris.data, iris.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+tpot = TPOTClassifier(
+ generations=5,
+ population_size=20,
+ verbosity=2,
+ random_state=0,
+ config_dict='TPOT sparse',
+ memory='auto',
+ n_jobs = -1,
+ cv=5
+)
+
+tpot.fit(X_train, y_train)
+
+acc = tpot.score(X_test, y_test)
+print(f"Accuracy = {acc:.2f}")
+
+tpot.export('best_model_pipeline.py')
